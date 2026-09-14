@@ -35,19 +35,24 @@ function doPost(e) {
 
 /* ─── NEW ORDER: Sheet row + confirmation emails ─── */
 function handleNewOrder(d) {
-  var sheet = getOrdersSheet_();
-  sheet.appendRow([
-    d.order_num || d.orderNum || "",
-    d.timestamp || new Date().toLocaleString("en-ZA"),
-    d.name || "",
-    d.email || "",
-    d.phone || "",
-    d.items || "",
-    d.delivery || "",
-    d.address || "",
-    d.total || "",
-    d.status || "New",
-  ]);
+  // Sheet write first, but never let a sheet problem stop the emails
+  try {
+    var sheet = getOrdersSheet_();
+    sheet.appendRow([
+    d.timestamp || new Date().toLocaleString("en-ZA"), // Time Stamp
+    d.order_num || d.orderNum || "",                   // Order Number
+    d.name || "",                                      // Name
+    d.phone || "",                                     // Phone
+    d.email || "",                                     // Email Address
+    d.items || "",                                     // Items
+    d.total || "",                                     // Total
+    d.delivery || "",                                  // Delivery
+    d.address || "",                                   // Address
+      d.status || "New",                                 // Status
+    ]);
+  } catch (err) {
+    // Sheet logging is best-effort; Supabase is the source of truth now.
+  }
 
   var orderNum = d.order_num || d.orderNum || "";
 
@@ -124,12 +129,12 @@ function handleStatusUpdate(d) {
       "Warm regards,\nCrumble & Co",
   });
 
-  // Keep the Sheet status column in sync (column J = Status)
+  // Keep the Sheet status column in sync (Order Number = column B, Status = column J)
   try {
     var sheet = getOrdersSheet_();
     var values = sheet.getDataRange().getValues();
     for (var i = 1; i < values.length; i++) {
-      if (String(values[i][0]) === String(d.order_num)) {
+      if (String(values[i][1]) === String(d.order_num)) {
         sheet.getRange(i + 1, 10).setValue(d.status);
         break;
       }
@@ -140,12 +145,21 @@ function handleStatusUpdate(d) {
 }
 
 /* ─── helpers ─── */
+// If your script is STANDALONE (not attached to the Sheet), paste your Sheet's ID
+// here (the long code in the Sheet's URL between /d/ and /edit). If the script is
+// bound to the Sheet you can leave it empty.
+var SPREADSHEET_ID = "";
+
 function getOrdersSheet_() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("No spreadsheet found — set SPREADSHEET_ID in Code.gs");
+  var sheet = ss.getSheets()[0];
   if (sheet.getLastRow() === 0) {
     sheet.appendRow([
-      "Order Number", "Timestamp", "Name", "Email", "Phone",
-      "Items", "Delivery", "Address", "Total", "Status",
+      "Time Stamp", "Order Number", "Name", "Phone", "Email Address",
+      "Items", "Total", "Delivery", "Address", "Status",
     ]);
   }
   return sheet;
