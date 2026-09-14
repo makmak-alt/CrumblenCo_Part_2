@@ -145,6 +145,21 @@ function handleStatusUpdate(d) {
 }
 
 /* ─── helpers ─── */
+// Run this manually (▶ Run in the editor) ONCE after pasting the code:
+// it forces Google to show the authorization prompt and sends a test email.
+// If the test email arrives, the webhook will work too.
+function testEmail() {
+  MailApp.sendEmail({
+    to: OWNER_EMAIL,
+    subject: "Crumble & Co webhook test ✅",
+    body: "If you can read this, the Apps Script email setup works.",
+  });
+  var ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+  Logger.log("Spreadsheet: " + (ss ? ss.getName() : "NONE — set SPREADSHEET_ID"));
+}
+
 // If your script is STANDALONE (not attached to the Sheet), paste your Sheet's ID
 // here (the long code in the Sheet's URL between /d/ and /edit). If the script is
 // bound to the Sheet you can leave it empty.
