@@ -200,7 +200,7 @@ async function handleChat(request, env) {
     { role: "user", content: message },
   ];
 
-  const aiRes = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+  const aiRes = await env.AI.run("@cf/meta/llama-3.2-3b-instruct", {
     messages,
     max_tokens: 220,
   });
