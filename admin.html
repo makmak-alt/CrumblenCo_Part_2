@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍪</text></svg>">
+<title>Crumble & Co — Owner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: #F9F4EE;
+    color: #2A1505;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; }
+  h1 span { color: #C47D2A; }
+  .badge { background: #C47D2A; color: #fff; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
+
+  .login-card, .card {
+    background: #fff;
+    border: 1px solid #EAD9C4;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(42,21,5,0.06);
+  }
+  .login-card { max-width: 420px; margin: 60px auto 0; text-align: center; }
+  .login-card p { font-size: 13px; color: #7A5030; margin: 8px 0 16px; }
+  input[type=password], input[type=text] {
+    width: 100%; padding: 12px 14px; border: 1px solid #EAD9C4; border-radius: 10px;
+    font-family: inherit; font-size: 14px; margin-bottom: 12px; background: #FDFAF6;
+  }
+  button {
+    font-family: inherit; cursor: pointer; border: none; border-radius: 10px;
+    background: #2A1505; color: #F5E6CC; padding: 11px 18px; font-size: 14px; font-weight: 500;
+    transition: transform .1s, opacity .1s;
+  }
+  button:hover { opacity: .88; }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .4; cursor: default; }
+  .btn-caramel { background: #C47D2A; color: #fff; }
+  .btn-small { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+  .error { color: #B3261E; font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar .spacer { flex: 1; }
+  .stat { font-size: 13px; color: #7A5030; }
+
+  .order { margin-bottom: 14px; }
+  .order-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .order-num { font-weight: 600; font-size: 16px; }
+  .order-date { font-size: 12px; color: #7A5030; }
+  .pill { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+  .pill.New       { background: #FDE8C8; color: #8a5a00; }
+  .pill.Paid      { background: #D9EAD3; color: #2e5b1e; }
+  .pill.Baking    { background: #FCE5CD; color: #9c4500; }
+  .pill.Packing   { background: #D0E0E3; color: #134f5c; }
+  .pill.Ready     { background: #CFE2F3; color: #0b5394; }
+  .pill.Delivered { background: #D9D2E9; color: #351c75; }
+  .pill.Cancelled { background: #F4CCCC; color: #990000; }
+  .order-body { margin-top: 10px; font-size: 13px; color: #4a2c12; line-height: 1.6; }
+  .order-body b { color: #2A1505; }
+  .order-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  select {
+    font-family: inherit; font-size: 13px; padding: 7px 10px;
+    border: 1px solid #EAD9C4; border-radius: 8px; background: #FDFAF6;
+  }
+  #empty { text-align: center; color: #7A5030; padding: 40px 0; font-size: 14px; display: none; }
+  .logout { background: none; color: #7A5030; text-decoration: underline; font-size: 12px; padding: 6px; }
+  .hint { font-size: 11px; color: #b08d68; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="loginView" class="login-card" style="display:none">
+    <h1>Crumble <span>&</span> Co</h1>
+    <span class="badge">Owner Dashboard</span>
+    <p>Enter your owner token to see and manage orders.<br>(It was set as <code>OWNER_TOKEN</code> when the Worker was deployed.)</p>
+    <input type="password" id="tokenInput" placeholder="Owner token" autocomplete="current-password">
+    <button class="btn-caramel" style="width:100%" onclick="login()">Open dashboard →</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" style="display:none">
+    <header>
+      <div>
+        <h1>Crumble <span>&</span> Co</h1>
+        <span class="badge">Owner Dashboard</span>
+      </div>
+      <button class="logout" onclick="logout()">log out</button>
+    </header>
+    <div class="toolbar">
+      <button class="btn-small" onclick="loadOrders()">↻ Refresh</button>
+      <span class="stat" id="stats"></span>
+      <div class="spacer"></div>
+      <span class="stat" id="lastRefresh"></span>
+    </div>
+    <div id="orders"></div>
+    <div id="empty">No orders yet — they'll appear here the moment a customer orders. 🍪</div>
+    <div class="error" id="dashError"></div>
+    <p class="hint">Statuses email the customer automatically (via the Apps Script webhook). "Paid" = payment verified in SnapScan/bank.</p>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://crumble-api.YOUR-SUBDOMAIN.workers.dev"; // ← same Worker URL as index.html
+const STATUSES = ["New", "Paid", "Baking", "Packing", "Ready", "Delivered", "Cancelled"];
+
+let token = sessionStorage.getItem('cc_owner_token') || '';
+
+function authHeaders() {
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+function show(view) {
+  document.getElementById('loginView').style.display = view === 'login' ? 'block' : 'none';
+  document.getElementById('dashView').style.display  = view === 'dash'  ? 'block' : 'none';
+}
+
+async function login() {
+  token = document.getElementById('tokenInput').value.trim();
+  document.getElementById('loginError').textContent = '';
+  if (!token) { document.getElementById('loginError').textContent = 'Please enter the token.'; return; }
+  try {
+    const res = await fetch(API_URL + '/orders', { headers: authHeaders() });
+    if (res.status === 401) { document.getElementById('loginError').textContent = 'Wrong token — try again.'; return; }
+    if (!res.ok) throw new Error();
+    sessionStorage.setItem('cc_owner_token', token);
+    show('dash');
+    renderOrders((await res.json()).orders || []);
+  } catch(e) {
+    document.getElementById('loginError').textContent = 'Could not reach the API. Check the Worker URL / your connection.';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('cc_owner_token');
+  token = '';
+  show('login');
+}
+
+async function loadOrders() {
+  document.getElementById('dashError').textContent = '';
+  try {
+    const res = await fetch(API_URL + '/orders', { headers: authHeaders() });
+    if (res.status === 401) { logout(); return; }
+    const data = await res.json();
+    renderOrders(data.orders || []);
+  } catch(e) {
+    document.getElementById('dashError').textContent = 'Refresh failed — check your connection.';
+  }
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+function renderOrders(orders) {
+  const box = document.getElementById('orders');
+  document.getElementById('empty').style.display = orders.length ? 'none' : 'block';
+  document.getElementById('stats').textContent =
+    orders.length + ' order' + (orders.length !== 1 ? 's' : '') +
+    ' · ' + orders.filter(o => o.status === 'New').length + ' new' +
+    ' · ' + orders.filter(o => o.status === 'Paid').length + ' awaiting bake';
+  document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-ZA');
+
+  box.innerHTML = orders.map(o => {
+    const date = new Date(o.created_at).toLocaleString('en-ZA');
+    const options = STATUSES.map(s =>
+      '<option value="' + s + '"' + (s === o.status ? ' selected' : '') + '>' + s + '</option>').join('');
+    return `
+    <div class="card order">
+      <div class="order-head">
+        <div>
+          <div class="order-num">${esc(o.order_num)}</div>
+          <div class="order-date">${esc(date)}</div>
+        </div>
+        <span class="pill ${esc(o.status)}">${esc(o.status)}</span>
+      </div>
+      <div class="order-body">
+        <b>${esc(o.name)}</b> · ${esc(o.email)}${o.phone ? ' · ' + esc(o.phone) : ''}<br>
+        🍪 ${esc(o.items)}<br>
+        ${o.delivery === 'Delivery' ? '🚗 Delivery → ' + esc(o.address) : '🏪 Pickup — Diep River'}<br>
+        Total: <b>${esc(o.total)}</b>
+      </div>
+      <div class="order-actions">
+        ${o.status === 'New' ? `<button class="btn-small btn-caramel" onclick="setStatus('${esc(o.order_num)}','Paid')">✓ Mark as paid</button>` : ''}
+        <select id="sel-${esc(o.order_num)}">${options}</select>
+        <button class="btn-small" onclick="updateFromSelect('${esc(o.order_num)}')">Update status</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateFromSelect(orderNum) {
+  const sel = document.getElementById('sel-' + orderNum);
+  setStatus(orderNum, sel.value);
+}
+
+async function setStatus(orderNum, status) {
+  document.getElementById('dashError').textContent = '';
+  try {
+    const res = await fetch(API_URL + '/orders/' + encodeURIComponent(orderNum), {
+      method: 'PATCH',
+      headers: authHeaders(),
+      body: JSON.stringify({ status })
+    });
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) throw new Error();
+    await loadOrders();
+  } catch(e) {
+    document.getElementById('dashError').textContent = 'Update failed — please try again.';
+  }
+}
+
+/* init */
+document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+if (token) {
+  fetch(API_URL + '/orders', { headers: authHeaders() })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(d => { show('dash'); renderOrders(d.orders || []); })
+    .catch(() => show('login'));
+} else {
+  show('login');
+}
+</script>
+</body>
+</html>

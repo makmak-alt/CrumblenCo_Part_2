@@ -1,0 +1,16 @@
+name = "crumble-api"
+main = "src/index.js"
+compatibility_date = "2026-09-14"
+
+# Workers AI binding — free tier: 10,000 neurons/day (Llama 3.1 8B)
+[ai]
+binding = "AI"
+
+[vars]
+SHEET_URL = "https://script.google.com/macros/s/AKfycbzWX4DMuMriUsWelhXzZo9xegH9Ee0A1XIz0lQ6MTNqqynHxZVzuGfgyGZeMd58jEL2/exec"
+ALLOWED_ORIGIN = "https://makmak-alt.github.io"
+
+# Secrets — set with `npx wrangler secret put <NAME>` (never write them here):
+#   SUPABASE_URL          e.g. https://abcdefgh.supabase.co
+#   SUPABASE_SERVICE_KEY  service_role key from Supabase → Settings → API
+#   OWNER_TOKEN           any long random string — this is the owner dashboard password
